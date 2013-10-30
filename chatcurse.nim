@@ -12,37 +12,34 @@ proc setupServer()
 
 # main procedure, serves as the main menu to allow the user to setup either a
 #   client or a server connection, or to exit gracefully
-proc main(): int =
-    echo "Welcome to Chat Curse!"
+when isMainModule:
+    block main:
+        echo "Welcome to Chat Curse!"
 
-    while True:
         while True:
-            # ask user to start either a server or client
-            write(stdout, "Start server? [yN]: ")
+            while True:
+                # ask user to start either a server or client
+                write(stdout, "Start server? [yN]: ")
+                case readLine(stdin)[0]
+                of 'n', 'N':
+                    # run procedure to start a connection to chat server
+                    setupClient()
+                    break
+                of 'y', 'Y':
+                    # run procedure to accept client requests
+                    setupServer()
+                    break
+                of 'q':
+                    # exit program
+                    break main
+                else: echo "Invalid input"
+            
+            # ask user whether or not to continue the program
+            write(stdout, "Quit program? [Yn]: ")
             case readLine(stdin)[0]
-            of 'n', 'N':
-                # run procedure to start a connection to chat server
-                setupClient()
-                break
-            of 'y', 'Y':
-                # run procedure to accept client requests
-                setupServer()
-                break
-            of 'q':
-                # exit program
-                return 0
-            else: echo "Invalid input"
-        
-        # ask user whether or not to continue the program
-        write(stdout, "Quit program? [Yn]: ")
-        case readLine(stdin)[0]
-        of 'n', 'N': continue
-        of 'y', 'Y': break
-        else: echo "Invalid input\n"
-
-    return 0
-
-discard main()
+            of 'n', 'N': continue
+            of 'y', 'Y': break main
+            else: echo "Invalid input\n"
 
 # setup client procedure
 #   accepts: nothing
@@ -133,7 +130,7 @@ proc setupServer() =
         echo "Error ", repr(ex), ": ", xmsg
         return
 
-    echo "Server created, waiting for connections
+    echo "Server created, waiting for connections"
 
     # set server socket to listen for 1 client at a time
     server.listen(1)
