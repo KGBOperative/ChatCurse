@@ -83,18 +83,18 @@ proc setupClient() =
 
     # read in the string to send to the server or quit if the command is read
     while True:
+        # wait for the user to enter a string of text
         write(stdout, clientName, "> ")
         let str = readLine(stdin)
 
-        echo "sending msg = ", str
-
+        # check if the user wants to quit
         if str == ":quit" or str == ":q":
             client.close
             return
 
+        # attempt to send the msg to the server
         try:
             client.send(str & "\r\L")
-            echo "msg sent"
         except:
             let
               ex = getCurrentException()
@@ -102,17 +102,27 @@ proc setupClient() =
             echo "Error ", repr(ex), ": ", xmsg
             break
 
+        # read response from server
         var msg: string = ""
         client.readLine(msg)
 
+        # the connection has closed if the line read is empty
         if msg == "":
             echo server, " has closed the connection"
             break
+        # print the response from the server if the msg is valid
         echo server, "> ", msg
 
+    # retry connecting to the server if the connection fails
     setupClient()
 
+# setup server procedure
+#   accepts: nothing
+#   returns: nothing
+#   purpose: sets up a listening server and echos messages back to any clients
+#       connected to the server
 proc setupServer() =
+    # create the server socket and bind it to the local address with port 5555
     var server = socket()
     try:
         server.bindAddr(TPort(5555), "127.0.0.1")
@@ -123,28 +133,38 @@ proc setupServer() =
         echo "Error ", repr(ex), ": ", xmsg
         return
 
+    echo "Server created, waiting for connections
+
+    # set server socket to listen for 1 client at a time
     server.listen(1)
 
     while True:
+        echo "Waiting for client connection"
+
+        # accept incoming client connection
         var client = socket()
         server.accept(client)
         
-        echo "client connection on ", $client.getFD
-
+        # grab username of the connected client
         var clientName: string = ""
         client.readLine(clientName)
         echo "client ", clientName, " has connected"
 
+        # continue to accept messages from client until connection is dropped
         while True:
+            # wait for client to send a message
             var msg: string = ""
             client.readLine(msg)
             
+            # the client has disconnected if the line is empty
             if msg == "":
                 echo clientName, " has disconnected"
                 break
 
+            # print the username and the message recieved
             echo clientName, "> ", msg
 
+            # attempt to echo the length and message back to the client
             try:
                 client.send("len = " & $msg.len & ", msg = " & msg & "\r\L")
             except:
