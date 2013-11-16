@@ -120,9 +120,9 @@ proc setupClient() =
 #       connected to the server
 proc setupServer() =
     # create the server socket and bind it to the local address with port 5555
-    var server = socket()
+    var serverSock = AsyncSocket()
     try:
-        server.bindAddr(TPort(5555), "127.0.0.1")
+        serverSock.bindAddr(TPort(5555), "127.0.0.1")
     except:
         let
           ex = getCurrentException()
@@ -132,8 +132,9 @@ proc setupServer() =
 
     echo "Server created, waiting for connections"
 
-    # set server socket to listen for 1 client at a time
-    server.listen(1)
+    # set server socket to listen for clients
+    serverSock.listen(1000)
+    var disp: PDispatcher = newDispatcher()
 
     while True:
         echo "Waiting for client connection"

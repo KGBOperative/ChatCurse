@@ -4,6 +4,7 @@
  *  File Contents: currently contains the main menu and functions to start either 
  *      a client or server session
  */
+
 #include <iostream>
 #include <cstring>
 #include <string>
@@ -67,7 +68,6 @@ int main() {
         // ask user to quit or continue
         // quit if user types something starting with q or Q
         std::string quit;
-        //std::cin.ignore(1000, '\n');
         std::cout << "Enter 'q' to quit: ";
         std::getline(std::cin, quit);
 
@@ -229,6 +229,7 @@ void setup_server() throw(const char*) {
                 break;
             }
 
+            // error in recieving
             else if (bytes_recieved == -1) {
                 delete[] recv_msg;
                 throw (strerror(errno));
